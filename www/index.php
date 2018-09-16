@@ -1,13 +1,44 @@
 <?php
+Class Database{
+	private $link;
 
-$html = curl_get('https://compendium.com.ua/atc/#C01E_X');
-$dom = str_get_html('$html');
-file_put_contents('index.html', $html);
+	public function __construct(){
 
-$medical_products = $dom ->find('.navbar-text');
+		$this->connect();
+	}
 
-foreach ($medical_products as $medical_product) {
+	private function connect(){
 
-$to_db = array('code_group');
+		$config = require_once 'config.php';
 
+		$dsn = 'mysql:host='.$config['host'].';db_name='.$config['db_name'].';charset='.$config['charset'];
+
+		$this->link = new PDO($dsn, $config['username'], $config['password']);
+
+		return $this;
+	}
+
+	public function execute($sql){
+
+		$sth = $this->link->prepare($sql);
+
+		return $sth->execute();
+
+	}
+
+	public function query($sql){
+
+		$sth = $this->link->prepare($sql);
+
+		$sth->execute();
+
+		$result = $sth->fetchALL(PDO::FETCH_ASSOC);
+
+		if($result === false){
+			return [];
+		}
+
+		return $result;
+	}
 }
+?>
